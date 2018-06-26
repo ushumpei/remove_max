@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import fs from 'fs'
 
 const readJSON = (file) => {
@@ -9,30 +10,25 @@ const readJSON = (file) => {
   })
 }
 
-const aggregateToDictionary = (input) => {
-  return input.map(i => i.split('-'))
-    .reduce((dic, kv) => {
-      if (!dic[kv[0]]) dic[kv[0]] = []
-      dic[kv[0]].push(kv[1])
-      return dic
-    }, {})
+// 結果がソートされる方法
+const removeMaxForEachPrefix = (json) => {
+  return _(json)
+    .sort()
+    .groupBy(i => i.split('-')[0])
+    .map(v => _.initial(v))
+    .flattenDeep()
+    .value()
 }
 
-const flattenOnlyLosers = (dictionary) => {
-  return Object.keys(dictionary)
-    .map(k => {
-      const a = dictionary[k].sort().slice(0, -1)
-      return a.map(v => k + '-' + v)
-    }).reduce((p, n) => {
-      return p.concat(n)
-    })
+// 並び順を変えない方法
+const removeMaxForEachPrefixKeepAlign = (json) => {
+  const winners = _(json).groupBy(i => i.split('-')[0]).map(v => _.max(v)).value()
+  const losers = _(json).difference(winners).value()
+  return losers
 }
 
-const main = async () => {
-  const input = await readJSON('input.json')
-  const dictionary = aggregateToDictionary(input)
-  const losers = flattenOnlyLosers(dictionary)
-  console.log(losers)
+const main = () => {
+  readJSON('input.json').then(removeMaxForEachPrefix).then(console.log)
+  readJSON('input.json').then(removeMaxForEachPrefixKeepAlign).then(console.log)
 }
-
 main()
