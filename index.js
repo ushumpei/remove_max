@@ -1,13 +1,10 @@
 import _ from 'lodash'
 import fs from 'fs'
+import { promisify } from 'util'
 
-const readJSON = (file) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(file, 'utf8', (err, data) => {
-      if (err) return reject(err)
-      resolve(JSON.parse(data))
-    })
-  })
+const readJSON = async (file) => {
+  const data = await promisify(fs.readFile)(file, 'utf8')
+  return JSON.parse(data)
 }
 
 // 結果がソートされる方法
